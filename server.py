@@ -23,7 +23,7 @@ CONSUMER_SECRET = '8d841eb94f8b865f09c3fc9290d1b024b816448f'
 MIXI_TOKEN_URL = 'https://secure.mixi-platform.com/2/token'
 MIXI_AUTHORIZATION_URL = 'https://mixi.jp/connect_authorize.pl'
 ACCESS_TOKEN = None
-SLEEPING_TIME = 10
+SLEEPING_TIME = 1
 
 TOKEN_EXPIRED = None
 REFRESH_TOKEN = None
@@ -76,7 +76,7 @@ class MyHandler(BaseHTTPRequestHandler):
         self.send_header('Content-type', 'text/plain')
         #self.send_header('Location', 'https://google.com')
         self.end_headers()
-        self.wfile.write('{}!'.format(ACCESS_TOKEN).encode('utf-8'))
+        self.wfile.write('{}'.format(ACCESS_TOKEN).encode('utf-8'))
 
 SERVER_STATE = None
 def _get_server_state():
