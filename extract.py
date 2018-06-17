@@ -1,12 +1,7 @@
-# FLOW
-#  Get access token from localhost
-#  request 
-#  save
-#  loop
-
+"""Get and save mixi diary."""
 import requests
 
-ACCESS_KEY = '0ad4afda3cdf98e50b6357e0adcc35427735c83f'
+ACCESS_KEY = 'fd44abc91c7356584a5c6116de2060401766c17f'
 
 def get_diary(diary_id):
     headers = {'Content-Type': 'application/x-www-form-urlencoded'}
@@ -16,11 +11,15 @@ def get_diary(diary_id):
     print(r)
     print(r.json())
     c = r.json()['created']
-    with open(c, 'w') as f:
+    n = _create_file_name(c)
+    print(n)
+
+    with open('{}.json'.format(n), 'w') as f:
         f.write(r.text)
     print('finish')
 
+def _create_file_name(created):
+    return created.replace('-', '').replace(':', '').replace('T', '')[0:14]
     
-    
-
-get_diary(1721036643)
+if __name__ == '__main__':
+    get_diary(1721036643)
