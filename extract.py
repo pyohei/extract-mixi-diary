@@ -14,12 +14,14 @@ def get_diary(diary_id):
     n = _create_file_name(c)
     print(n)
 
-    with open('{}.json'.format(n), 'w') as f:
+    with open(n, 'w') as f:
         f.write(r.text)
     print('finish')
 
 def _create_file_name(created):
-    return created.replace('-', '').replace(':', '').replace('T', '')[0:14]
+    """Create file neme as YYYYmmddHHMMDD.json'"""
+    return '{}.json'.format(
+            created.replace('-', '').replace(':', '').replace('T', '')[0:14])
     
 if __name__ == '__main__':
     get_diary(1721036643)
