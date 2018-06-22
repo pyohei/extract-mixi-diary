@@ -10,11 +10,16 @@ import time
 def main():
     """Main script."""
     args = _parse_argument()
-
-        diary_ids = parser.parse()
-        for i in diary_ids:
-            extract.get_diary(i)
-            time.sleep(2)
+    for r, d, fs in os.walk(args.org):
+        for f in fs:
+            path = os.path.join(r, f)
+            print(path)
+            parser.parse(path)
+            print(set(parser.values))
+            continue
+            for i in diary_ids:
+                extract.get_diary(i)
+                time.sleep(2)
 
 
 def _parse_argument():
