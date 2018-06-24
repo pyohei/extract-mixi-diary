@@ -15,6 +15,7 @@ class Extractction(object):
             return r.text
         except Exception as e:
             print('You have trouble to fetch access token(localhost)')
+            print('If you do not run server, please execute `server.py`.')
             print('<-------PythonError------>')
             print(e)
             raise
