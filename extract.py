@@ -10,6 +10,12 @@ class Extractction(object):
         self.save_dir = save_dir
 
     def _get_access_token(self):
+        """Get access token from localhost.
+
+        This script load access token from server.py result.
+        Therefore, you must run server.py to obtain access token.
+        See README.md.
+        """
         try:
             r = requests.get('http://localhost:{}'.format(self.port))
             return r.text
@@ -21,6 +27,7 @@ class Extractction(object):
             raise
 
     def save_diary(self, diary_id):
+        """Get and save mixi diary."""
         access_token = self._get_access_token()
         headers = {'Content-Type': 'application/x-www-form-urlencoded'}
         params = {'access_token': access_token}
