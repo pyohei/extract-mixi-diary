@@ -3,7 +3,7 @@ import argparse
 import os
 
 import parser
-import extract
+from extract import Extractction
 import time
 
 
@@ -16,12 +16,11 @@ def main():
             path = os.path.join(r, f)
             parser.parse(path)
     diary_ids = parser.values
-    print(diary_ids) #Debug
-    return
 
     # Request and save diary.
+    e = Extractction(9999, args.dst)
     for i in diary_ids:
-        extract.get_diary(i)
+        e.save_diary(i)
         time.sleep(2)
 
 
