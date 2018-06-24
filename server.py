@@ -8,6 +8,7 @@ I confirm this script with Python3.6 only.
 # Republish access token
 # timer function
 # error handling?(minimum)
+import argparse
 from http.server import SimpleHTTPRequestHandler
 from http.server import BaseHTTPRequestHandler
 import socketserver
@@ -16,10 +17,8 @@ from urllib.parse import urlparse, parse_qs
 import requests
 import time
 
-PORT = 9999 # TODO: Change
-
-CONSUMER_KEY = '496d085c325ec3133cd0'
-CONSUMER_SECRET = '8d841eb94f8b865f09c3fc9290d1b024b816448f'
+CONSUMER_KEY = None
+CONSUMER_SECRET = None
 MIXI_TOKEN_URL = 'https://secure.mixi-platform.com/2/token'
 MIXI_AUTHORIZATION_URL = 'https://mixi.jp/connect_authorize.pl'
 ACCESS_TOKEN = None
@@ -86,11 +85,12 @@ def _get_server_state():
         return SERVER_STATE
     headers = {'Content-Type': 'application/x-www-form-urlencoded'}
     params = {'grant_type': 'server_state',
-              'client_id': '496d085c325ec3133cd0'}
+              'client_id': CONSUMER_KEY}
     r = requests.post(
             MIXI_TOKEN_URL,
             headers=headers,
             data=params)
+    print(r.text)
     SERVER_STATE = r.json()['server_state']
     print(SERVER_STATE)
     time.sleep(5)
@@ -100,8 +100,8 @@ def _get_server_state():
 def _get_access_token(code):
     headers = {'Content-Type': 'application/x-www-form-urlencoded'}
     params = {'grant_type': 'authorization_code',
-              'client_id': '496d085c325ec3133cd0',
-              'client_secret': '8d841eb94f8b865f09c3fc9290d1b024b816448f',
+              'client_id': CONSUMER_KEY,
+              'client_secret': CONSUMER_SECRET,
               'code': code,
               'server_state': SERVER_STATE}
     print(params)
@@ -125,8 +125,8 @@ def _republish_access_token():
     global REFRESH_TOKEN 
     headers = {'Content-Type': 'application/x-www-form-urlencoded'}
     params = {'grant_type': 'refresh_token',
-              'client_id': '496d085c325ec3133cd0',
-              'client_secret': '8d841eb94f8b865f09c3fc9290d1b024b816448f',
+              'client_id': CONSUMER_KEY,
+              'client_secret': CONSUMER_SECRET,
               'refresh_token': REFRESH_TOKEN}
     print('Refresh!!!!!!!!!!!!!')
     print(params)
@@ -156,10 +156,20 @@ def _get_redirect_url():
 
 def run():
     """Run server"""
+    p = argparse.ArgumentParser(description='Mixi diary save script.')
+    p.add_argument('--consumer', '-c', help='consumer key', required=True)
+    p.add_argument('--secret', '-s', help='secret key', required=True)
+    p.add_argument('--port', '-p', help='port number of access key', required=True, type=int)
+    args = p.parse_args()
+    global CONSUMER_KEY
+    global CONSUMER_SECRET
+    CONSUMER_KEY = args.consumer
+    CONSUMER_SECRET = args.secret
+
     handler = MyHandler
-    httpd = socketserver.TCPServer(("", PORT), handler)
+    httpd = socketserver.TCPServer(("", args.port), handler)
     
-    print('http://localhost:{}'.format(PORT))
+    print('http://localhost:{}'.format(args.port))
     httpd.serve_forever()
 
 run()

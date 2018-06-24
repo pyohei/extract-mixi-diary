@@ -27,8 +27,6 @@ def main():
 def _parse_argument():
     """Parse argument."""
     p = argparse.ArgumentParser(description='Mixi diary save script.')
-    p.add_argument('--consumer', '-c', help='consumer key', required=True)
-    p.add_argument('--secret', '-s', help='secret key', required=True)
     p.add_argument('--port', '-p', help='port number of access key', required=True, type=int)
     p.add_argument('--org', '-o', help='original mixi html dir', required=True)
     p.add_argument('--dst', '-d', help='output directory of diary', required=True)
