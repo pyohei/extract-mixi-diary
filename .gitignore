@@ -1,3 +1,7 @@
 *.pyc
 
 venv*
+
+# For me
+save/*
+diary/*
