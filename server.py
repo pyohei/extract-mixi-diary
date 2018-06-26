@@ -10,6 +10,7 @@ If you want to know more, please read README.md.
 import argparse
 from http.server import SimpleHTTPRequestHandler
 from http.server import BaseHTTPRequestHandler
+import logging
 import socketserver
 import io
 from urllib.parse import urlparse, parse_qs
@@ -27,6 +28,9 @@ TOKEN_EXPIRED = None
 REFRESH_TOKEN = None
 SERVER_STATE = None
 
+# Logging settings
+logging.basicConfig(format='%(asctime)s,%(levelname)s,%(message)s',
+                    level=logging.INFO)
 
 class MyHandler(BaseHTTPRequestHandler):
 
@@ -37,19 +41,18 @@ class MyHandler(BaseHTTPRequestHandler):
         """
         global ACCESS_TOKEN
 
+        logging.info('Path:{}'.format(self.path))
         u = urlparse(self.path)
-        # TODO: logging
-        print(self.path)
-        print(urlparse(self.path))
+
+        # Redirect process
         if not ACCESS_TOKEN and 'redirect' in u.path:
-            # TODO: logging
-            print(u)
-            print(code)
+            logging.info('redirect')
             code = parse_qs(u.query)['code']
-            time.sleep(2)
             ACCESS_TOKEN = _get_access_token(code[0])
 
+        # Request new access token
         if not ACCESS_TOKEN:
+            logging.info('new token')
             # TODO: logging
             print('GET NEW ACCESS TOKEN!')
             # get server_state
@@ -59,7 +62,9 @@ class MyHandler(BaseHTTPRequestHandler):
             self.end_headers()
             return
 
+        # Refresh access token
         if TOKEN_EXPIRED:
+            logging.info('refresh')
             # TODO: logging
             print(rest_time)
             rest_time = TOKEN_EXPIRED - time.time()
@@ -71,7 +76,7 @@ class MyHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write('{}'.format(ACCESS_TOKEN).encode('utf-8'))
 
-# NOTE: I think the below scripts should include in class??
+
 def _get_server_state():
     """Get server state from mixi API."""
     global SERVER_STATE
@@ -82,6 +87,8 @@ def _get_server_state():
     headers = {'Content-Type': 'application/x-www-form-urlencoded'}
     params = {'grant_type': 'server_state',
               'client_id': CONSUMER_KEY}
+    # Do not delete sleep statement!
+    time.sleep(2)
     r = requests.post(
             MIXI_TOKEN_URL,
             headers=headers,
@@ -89,7 +96,6 @@ def _get_server_state():
     # TODO: logging
     print(r.text)
     SERVER_STATE = r.json()['server_state']
-    time.sleep(2)
     return SERVER_STATE
 
 def _get_access_token(code):
@@ -102,7 +108,8 @@ def _get_access_token(code):
               'client_secret': CONSUMER_SECRET,
               'code': code,
               'server_state': SERVER_STATE}
-    time.sleep(5)
+    # Do not delete sleep statement!
+    time.sleep(2)
     r = requests.post(
             MIXI_TOKEN_URL,
             headers=headers,
@@ -126,6 +133,8 @@ def _republish_access_token():
               'client_id': CONSUMER_KEY,
               'client_secret': CONSUMER_SECRET,
               'refresh_token': REFRESH_TOKEN}
+    # Do not delete sleep statement!
+    time.sleep(2)
     r = requests.post(
             MIXI_TOKEN_URL,
             headers=headers,
@@ -171,7 +180,7 @@ def run():
     handler = MyHandler
     httpd = socketserver.TCPServer(("", args.port), handler)
     
-    print('http://localhost:{}'.format(args.port))
+    logging.info('http://localhost:{}'.format(args.port))
     httpd.serve_forever()
 
 run()
