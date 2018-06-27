@@ -167,7 +167,6 @@ def run():
     p = argparse.ArgumentParser(description='Mixi diary save script.')
     p.add_argument('--consumer', '-c', help='consumer key', required=True)
     p.add_argument('--secret', '-s', help='secret key', required=True)
-    p.add_argument('--port', '-p', help='port number of access key', required=True, type=int)
     args = p.parse_args()
     global CONSUMER_KEY
     global CONSUMER_SECRET
@@ -175,9 +174,9 @@ def run():
     CONSUMER_SECRET = args.secret
 
     handler = MyHandler
-    httpd = socketserver.TCPServer(("", args.port), handler)
+    httpd = socketserver.TCPServer(("", 9999), handler)
     
-    logging.info('http://localhost:{}'.format(args.port))
+    logging.info('http://localhost:{}'.format(9999))
     httpd.serve_forever()
 
 run()
