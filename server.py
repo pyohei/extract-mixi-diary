@@ -40,36 +40,29 @@ class MyHandler(BaseHTTPRequestHandler):
         Any GET access thorough this process.
         """
         global ACCESS_TOKEN
-
-        logging.info('Path:{}'.format(self.path))
         u = urlparse(self.path)
 
         # Redirect process
         if not ACCESS_TOKEN and 'redirect' in u.path:
-            logging.info('redirect')
             code = parse_qs(u.query)['code']
             ACCESS_TOKEN = _get_access_token(code[0])
+            logging.info('NewAccessToken:{}'.format(ACCESS_TOKEN))
 
         # Request new access token
         if not ACCESS_TOKEN:
-            logging.info('new token')
-            # TODO: logging
-            print('GET NEW ACCESS TOKEN!')
-            # get server_state
-            print(_get_redirect_url())
+            r_url = _get_redirect_url()
             self.send_response(301)
-            self.send_header('Location', _get_redirect_url())
+            self.send_header('Location', r_url)
             self.end_headers()
+            logging.info('RedirectUrl:{}'.format(r_url))
             return
 
         # Refresh access token
         if TOKEN_EXPIRED:
-            logging.info('refresh')
-            # TODO: logging
-            print(rest_time)
             rest_time = TOKEN_EXPIRED - time.time()
             if rest_time <= 0:
                 ACCESS_TOKEN = _republish_access_token()
+            logging.info('RefreshAccessToken:{}({}s)'.format(ACCESS_TOKEN, str(rest_time)))
 
         self.send_response(200)
         self.send_header('Content-type', 'text/plain')
@@ -81,9 +74,8 @@ def _get_server_state():
     """Get server state from mixi API."""
     global SERVER_STATE
     if SERVER_STATE:
-        # TODO: logging
-        print('exits')
         return SERVER_STATE
+
     headers = {'Content-Type': 'application/x-www-form-urlencoded'}
     params = {'grant_type': 'server_state',
               'client_id': CONSUMER_KEY}
@@ -93,8 +85,7 @@ def _get_server_state():
             MIXI_TOKEN_URL,
             headers=headers,
             data=params)
-    # TODO: logging
-    print(r.text)
+    logging.info('ServerStateResponse:{}'.format(r.text))
     SERVER_STATE = r.json()['server_state']
     return SERVER_STATE
 
@@ -115,8 +106,7 @@ def _get_access_token(code):
             headers=headers,
             data=params)
     response = r.json()
-    # TODO: logging
-    print(response)
+    logging.info('TokenApiResponse:{}'.format(response))
 
     TOKEN_EXPIRED = int(time.time()) + int(response['expires_in'])
     REFRESH_TOKEN = response['refresh_token']
@@ -125,7 +115,10 @@ def _get_access_token(code):
 
 
 def _republish_access_token():
-    """Get access token from refresh token."""
+    """Get access token from refresh token.
+    
+    This script is basically same with `_get_access_token()`
+    """
     global REFRESH_TOKEN 
     global TOKEN_EXPIRED
     headers = {'Content-Type': 'application/x-www-form-urlencoded'}
@@ -140,9 +133,7 @@ def _republish_access_token():
             headers=headers,
             data=params)
     response = r.json()
-    # TODO: logging
-    print(params)
-    print(response)
+    logging.info('ReTokenApiResponse:{}'.format(response))
 
     TOKEN_EXPIRED = int(time.time()) + int(response['expires_in'])
     REFRESH_TOKEN = response['refresh_token']
@@ -155,7 +146,13 @@ def _get_redirect_url():
     In this code, I give authorization of reading diary.
     """
     ss = _get_server_state()
-    url = '{url}?client_id={cid}&response_type=code&scope=r_diary%20w_diary&state=mixiapi&server_state={ss}'
+    # TODO: want to fix smart code...
+    url = '{url}?'\
+          'client_id={cid}&'\
+          'response_type=code'\
+          '&scope=r_diary%20w_diary&'\
+          'state=mixiapi&'\
+          'server_state={ss}'
     return url.format(
             url=MIXI_AUTHORIZATION_URL,
             cid=CONSUMER_KEY,
